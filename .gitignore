@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+data/raw/
+models/
+mlruns/
+mlartifacts/
+reports/
+.env
+*.pyc
+.terraform/
+*.tfstate*
+*.tfvars
+
+# Local experiment tracking database
+mlflow.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Local Grafana backup
+monitoring/grafana-backup/
+
+# Local secrets and credentials
+.env.*
+!.env.example
+
+# Local Prefect database and state
+.prefect/

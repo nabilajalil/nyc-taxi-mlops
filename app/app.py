@@ -1,6 +1,9 @@
 from pathlib import Path
 import os
 import joblib
+import mlflow
+import mlflow.sklearn
+from mlflow.exceptions import MlflowException
 from flask import Flask, jsonify, render_template, request
 from src.features import make_features
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
@@ -14,11 +17,35 @@ _model = None
 
 def get_model():
     global _model
+
     if _model is None:
-        path = Path(os.environ.get("MODEL_PATH", str(ROOT / "models/taxi_model.joblib")))
-        if not path.is_file():
-            raise FileNotFoundError("Model unavailable; train the model before starting the service")
-        _model = joblib.load(path)  # Trusted model artifacts only.
+        model_uri = os.environ.get("MLFLOW_MODEL_URI")
+
+        if model_uri:
+            mlflow.set_tracking_uri(
+                os.environ.get(
+                    "MLFLOW_TRACKING_URI",
+                    f"sqlite:///{ROOT / 'mlflow.db'}",
+                )
+            )
+
+            _model = mlflow.sklearn.load_model(model_uri)
+
+        else:
+            path = Path(
+                os.environ.get(
+                    "MODEL_PATH",
+                    str(ROOT / "models/taxi_model.joblib"),
+                )
+            )
+
+            if not path.is_file():
+                raise FileNotFoundError(
+                    "Model unavailable; train the model before starting the service"
+                )
+
+            _model = joblib.load(path)
+
     return _model
 
 
@@ -60,9 +87,8 @@ def predict():
     except (KeyError, ValueError, TypeError) as exc:
         REQUESTS.labels(status="bad_request").inc()
         return jsonify(error=str(exc)), 400
-    except FileNotFoundError:
-        return jsonify(error="Model not trained yet"), 503
-
+    except (FileNotFoundError, OSError, MlflowException):
+        return jsonify(error="Model unavailable"), 503
 
 @app.post("/predict-form")
 def predict_form():
@@ -71,5 +97,5 @@ def predict_form():
         return render_template("index.html", prediction=result)
     except (KeyError, ValueError, TypeError) as exc:
         return render_template("index.html", error=str(exc)), 400
-    except FileNotFoundError:
-        return render_template("index.html", error="Model not trained yet"), 503
+    except (FileNotFoundError, OSError, MlflowException):
+        return render_template("index.html", error="Model unavailable"), 503

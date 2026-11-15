@@ -12,3 +12,4 @@ prefect>=3.0,<4
 evidently>=0.7,<1
 prometheus-client>=0.20,<1
 ruff>=0.8,<1
+skops==0.16.0

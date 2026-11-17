@@ -7,7 +7,7 @@ resource "aws_instance" "taxi_server" {
   subnet_id = "subnet-0ca5a30f0e2052a55"
 
   vpc_security_group_ids = [
-    "sg-044ecb96e3c7031bf"
+    aws_security_group.taxi_server.id
   ]
 
   tags = {

@@ -29,3 +29,12 @@ monitoring/grafana-backup/
 
 # Local Prefect database and state
 .prefect/
+# Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+**/terraform.tfvars
+**/terraform.tfvars.json
+**/crash.log
+**/crash.*.log
+sitecustomize.py

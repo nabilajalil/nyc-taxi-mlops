@@ -28,7 +28,7 @@ data "aws_iam_policy_document" "github_deploy_trust" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:nabilajalil/nyc-taxi-mlops:ref:refs/heads/main"
+        "repo:nabilajalil@186692670/nyc-taxi-mlops@1458411181:ref:refs/heads/main"
       ]
     }
   }

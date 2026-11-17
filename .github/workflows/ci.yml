@@ -48,3 +48,69 @@ jobs:
           context: .
           push: false
           tags: nyc-taxi-mlops:ci
+  
+  docker-smoke-test:
+    name: Docker Deployment Smoke Test
+    runs-on: ubuntu-latest
+    needs: docker-build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test model dependencies
+        run: pip install joblib pandas scikit-learn
+
+      - name: Create temporary test model
+        run: python tests/create_ci_model.py
+
+      - name: Build Docker image
+        run: docker build -t nyc-taxi-mlops:smoke .
+
+      - name: Start temporary API container
+        run: |
+          docker run -d \
+            --name taxi-api-smoke \
+            -p 8000:8000 \
+            -e MODEL_PATH=/tmp/ci_model.joblib \
+            -v "${{ github.workspace }}/tests/ci_model.joblib:/tmp/ci_model.joblib:ro" \
+            nyc-taxi-mlops:smoke
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://localhost:8000/health; then
+              echo "API is healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+
+          docker logs taxi-api-smoke
+          exit 1
+
+      - name: Test prediction endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          curl --fail --show-error --silent \
+            -X POST http://localhost:8000/predict \
+            -H "Content-Type: application/json" \
+            -d '{
+              "PULocationID": 161,
+              "DOLocationID": 132,
+              "pickup_hour": 8,
+              "day_of_week": 0
+            }' | python -c '
+          import json
+          import sys
+          result = json.load(sys.stdin)
+          assert result["predicted_duration_minutes"] == 12.5, result
+          print("Prediction smoke test passed:", result)
+          '

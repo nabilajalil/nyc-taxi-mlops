@@ -71,7 +71,7 @@ def health():
     try:
         get_model()
         return jsonify(status="ok")
-    except (FileNotFoundError, OSError):
+    except (FileNotFoundError, OSError, MlflowException):
         return jsonify(status="model_unavailable"), 503
 
 

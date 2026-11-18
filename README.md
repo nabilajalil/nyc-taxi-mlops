@@ -7,7 +7,7 @@
 [![Terraform](https://img.shields.io/badge/Terraform-IaC-844FBA)](https://www.terraform.io/)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF)](https://github.com/features/actions)
 
-An end-to-end machine learning engineering portfolio project that predicts New York City yellow taxi trip duration. It covers the six **MLOps Zoomcamp** areas: modeling, experiment tracking, orchestration, deployment, monitoring, and engineering best practices, with a working AWS CI/CD pipeline.
+An end-to-end machine learning engineering portfolio project that predicts New York City yellow taxi trip duration. It covers the six areas: modeling, experiment tracking, orchestration, deployment, monitoring, and engineering best practices, with a working AWS CI/CD pipeline.
 
 > **Deployment status:** The trained model was successfully served from an ECR-built Docker container on EC2, loaded through MLflow from S3, and tested through the Flask API. **GitHub Actions CD run #8** successfully deployed through AWS Systems Manager. The EC2 instance is intentionally stopped between tests to limit costs; there is no public live demo.
 
@@ -263,7 +263,7 @@ Supply valid AWS credentials and any required variables before planning. **Inspe
 
 - Training uses bounded samples and historical 2023 data; results are not production guarantees.
 - Model promotion and retraining are not fully automated.
-- CD is **manually triggered** and requires EC2 to be running.
+- The CD workflow is manually triggered. Docker images can be published to ECR while EC2 is stopped, but deployment to EC2 requires the instance to be running and available through AWS Systems Manager.
 - Deployment currently uses a separate API port rather than replacing the original Compose service.
 - There is no public HTTPS endpoint, autoscaling, high availability, or automated rollback.
 - Monitoring includes service metrics and historical drift, but not live ground-truth model accuracy.
@@ -273,7 +273,6 @@ Potential improvements include automated quality gates and model promotion, sche
 ## References
 
 - [NYC TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
-- [MLOps Zoomcamp](https://github.com/DataTalksClub/mlops-zoomcamp)
 - [MLflow](https://mlflow.org/docs/latest/)
 - [Prefect](https://docs.prefect.io/)
 - [AWS](https://docs.aws.amazon.com/)
